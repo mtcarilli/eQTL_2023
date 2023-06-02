@@ -82,3 +82,78 @@ sorted_samples_subset_meta = samples_full[ind]
 
 # save
 sorted_samples_subset_meta.to_csv(SNP_path + 'sorted_sample_subset_metadata.csv')
+
+
+
+
+
+# also store covariates 
+samps_to_store = ['0_' + s for s in samps_unique]
+
+
+# convert sexes to 0 and 1 
+sexes = [1 if s == 'female' else 0 for s in sex_unique]
+
+# one hot encode lab
+labs = np.zeros((7,len(lab_unique)))
+for i in range(1,8):
+    labs[i-1,:] = [1 if l == i else 0 for l in lab_unique]
+    
+# make and save df
+covariate_df = pd.DataFrame({'Lab 1' : labs[0,:], 
+                             'Lab 2' : labs[1,:], 
+                             'Lab 3' : labs[2,:], 
+                             'Lab 4' : labs[3,:], 
+                             'Lab 5' : labs[4,:], 
+                             'Lab 6' : labs[5,:], 
+                             'Lab 7' : labs[6,:], 
+                             'Sex' : sexes})
+
+covariate_df_T = covariate_df.T
+covariate_df_T.columns = samps_to_store
+
+covariate_df_T.to_csv('./geuvadis.covariates.T',header=True,sep = '\t',index=True)
+
+
+# separate out covariates by population
+populations = ['Fin', 'Tos', 'Yor', 'Ut', 'Bri']
+
+for pop in populations:
+    
+    index = [True if pop in population else False for population in pop_unique]
+    
+    pop_labs_unique = np.unique(np.array(lab_unique)[index])
+    
+    if 7.0 in pop_labs_unique:
+        pop_labs_unique = np.setdiff1d(pop_labs_unique, [7.0])
+    
+
+    
+    cov_dict_ = {f'Lab {i}' : labs[int(i-1),index] for i in pop_labs_unique}
+    cov_dict_['Sex'] = np.array(sexes)[index]
+    
+    
+    # make and save df
+    covariate_df_ = pd.DataFrame(cov_dict_)
+
+    covariate_df_T_ = covariate_df_.T
+    covariate_df_T_.columns = np.array(samps_to_store)[index]
+    
+    covariate_df_T_.to_csv(f'./{pop}.lab_sex_covariates.T',header=True,sep = '\t',index=True)
+    
+    # make and save LAB df
+    lab_dict_ = {f'Lab {i}' : labs[int(i-1),index] for i in pop_labs_unique}
+    lab_df_ = pd.DataFrame(lab_dict_)
+
+    lab_df_T_ = lab_df_.T
+    lab_df_T_.columns = np.array(samps_to_store)[index]
+    
+    lab_df_T_.to_csv(f'./{pop}.lab_covariates.T',header=True,sep = '\t',index=True)
+    
+    # make and save SEX df
+    sex_df_ = pd.DataFrame({'Sex' : np.array(sexes)[index]})
+
+    sex_df_T_ = sex_df_.T
+    sex_df_T_.columns = np.array(samps_to_store)[index]
+    
+    sex_df_T_.to_csv(f'./{pop}.sex_covariates.T',header=True,sep = '\t',index=True)
