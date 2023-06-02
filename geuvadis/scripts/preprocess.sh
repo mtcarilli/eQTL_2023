@@ -35,8 +35,6 @@ do
     paste $SNP_path/${POP}_snp.txt $SNP_path/${POP}_chr_pos.txt > $SNP_path/${POP}_snps_loc.txt
 
 #     # reformat eigenvecs
-#     python3 $SNP_path/reformatEigenVecs.py --name $POP
+    python3 $SNP_path/reformatEigenVecs.py --name $POP
     
-    # save covariates
-    python3 $script_path/reformatCovariates.py --name $POP --covariates $COV
 done
